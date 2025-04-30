@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <title>main page</title>
+        <h:outputStylesheet name="src/styles/main.css"/>
+        <h:outputStylesheet name="src/styles/general.css"/>
+    </h:head>
+
+    <h:body>
+        <main class="main">
+            <div class="main-left-section">
+                <h:form>
+                    <h:commandButton value="Начальная" styleClass="to-welcome-button" action="go-welcome"/>
+                </h:form>
+
+                <h:form id="coordsForm" class="coords-form" prependId="false">
+                    <p>Выберите значение для X:</p>
+                        <p:selectOneRadio id="x-cord-input" value="#{pointBean.x}" required="true" requiredMessage="Поле X обязательно">
+                            <f:selectItem itemValue="-3" itemLabel="-3" />
+                            <f:selectItem itemValue="-2" itemLabel="-2" />
+                            <f:selectItem itemValue="-1" itemLabel="-1" />
+                            <f:selectItem itemValue="0" itemLabel="0" />
+                            <f:selectItem itemValue="1" itemLabel="1" />
+                            <f:selectItem itemValue="2" itemLabel="2" />
+                            <f:selectItem itemValue="3" itemLabel="3" />
+                        </p:selectOneRadio>
+                    <p:message id="x-cord-message" for="x-cord-input" style="color:red" />
+
+                    <h:outputLabel for="y-cord-input" value="Введите значение для Y:"/>
+                    <h:panelGroup>
+                        <p:inputText id="y-cord-input" value="#{pointBean.y}"
+                                     placeholder="Input Y coord"
+                                     required="true"
+                                     requiredMessage="Поле Y обязательно"
+                                     validatorMessage="Значение Y должно быть числом в диапазоне от -100 до 100">
+                            <f:convertNumber />
+                            <f:validateDoubleRange minimum="-100" maximum="100"/>
+                        </p:inputText>
+                        <h:outputText value="Данное значение должно быть в диапазоне (-100, 100)" style="font-size: 10px"/>
+                        <p:message id="y-cord-message" for="y-cord-input" style="color:red" />
+                    </h:panelGroup>
+
+                    <p>Выберите значение для R:</p>
+                    <p:selectOneRadio id="r-cord-input" value="#{pointBean.r}" onchange="updateFigures()" required="true" requiredMessage="Поле R обязательно">
+                        <f:selectItem itemValue="1" itemLabel="1"/>
+                        <f:selectItem itemValue="2" itemLabel="2" />
+                        <f:selectItem itemValue="3" itemLabel="3" />
+                        <f:selectItem itemValue="4" itemLabel="4" />
+                        <f:selectItem itemValue="5" itemLabel="5" />
+                    </p:selectOneRadio>
+                    <p:message id="r-cord-message" for="r-cord-input" style="color:red" />
+
+                    <p:commandButton id="submitButton" value="Submit" action="#{pointBean.submit}"
+                                     update="x-cord-message, y-cord-message, r-cord-message, validationMessage, resultsTable, lastHit, lastX, lastY"
+                                     oncomplete="handleSubmitComplete();" />
+                    <h:outputText id="validationMessage" value="#{pointBean.validationMessage}" styleClass="js-validation-message" />
+
+                    <h:panelGroup id="resultsTable">
+                        <p:dataTable value="#{pointBean.results}" var="result" rendered="#{not empty pointBean.results}" scrollable="true" scrollHeight="200">
+                            <p:column headerText="X">
+                                <h:outputText value="#{result.x}" />
+                            </p:column>
+                            <p:column headerText="Y">
+                                <h:outputText value="#{result.y}" />
+                            </p:column>
+                            <p:column headerText="R">
+                                <h:outputText value="#{result.r}" />
+                            </p:column>
+                            <p:column headerText="Попадание">
+                                <h:outputText value="#{result.hit ? 'Да' : 'Нет'}" />
+                            </p:column>
+                        </p:dataTable>
+                    </h:panelGroup>
+
+                    <h:outputText id="lastHit" value="#{pointBean.lastHit}" style="display:none;" />
+                    <h:outputText id="lastX" value="#{pointBean.lastX}" style="display:none;" />
+                    <h:outputText id="lastY" value="#{pointBean.lastY}" style="display:none;" />
+
+                    <p:remoteCommand
+                            name="processClick"
+                            process="@this"
+                            action="#{pointBean.processCanvasClick}"
+                            update=":validationMessage, :resultsTable, :lastHit"
+                            oncomplete="handleProcessClickComplete();"/>
+                </h:form>
+            </div>
+            <div class="main-right-section">
+                <div class="cord-plane">
+                    <canvas id="graphCanvas" width="500" height="500"> </canvas>
+                </div>
+            </div>
+        </main>
+    </h:body>
+    <h:outputScript library="src" name="scripts/index.js"/>
+</html>

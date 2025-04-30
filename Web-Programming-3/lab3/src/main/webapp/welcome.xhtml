@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+<h:head>
+    <title>welcome page</title>
+    <h:outputStylesheet name="src/styles/header.css"/>
+    <h:outputStylesheet name="src/styles/general.css"/>
+</h:head>
+<h:body>
+    <header class="header">
+        <div class="left-section">
+            <img class="itmo-logo-light" src="./resources/src/images/itmo-logo-light.svg" alt="Логотип ИТМО"/>
+            <img class="cs-logo" src="./resources/src/images/cs-logo.png" alt="Логотип ВТ"/>
+        </div>
+        <div class="middle-section">
+            Лабораторная работа №3
+        </div>
+        <div class="right-section">
+            <p>Молчанов Артём</p>
+            <p>Группа: Р3219</p>
+            <p>Вариант: 19992</p>
+        </div>
+    </header>
+    <h:form>
+        <div id="to-main-button-and-clock">
+        <canvas id="clock" width="500" height="500"> </canvas>
+        <h:commandButton value="Главная" styleClass="to-main-button" action="go-main"/>
+        </div>
+    </h:form>
+</h:body>
+<h:outputScript library="src" name="scripts/clock.js"/>
+</html>

@@ -1,0 +1,57 @@
+body{
+  margin:0;
+  background-color: rgb(77, 77, 77);
+  color: white;
+}
+
+p{
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+.to-main-button{
+  height: 250px;
+  width: 250px;
+  margin-right: 200px;
+  font-size: 50px;
+  border: none;
+  padding: 12px 8px;
+  border-radius: 4px;
+  color: white;
+  background-color: rgb(60, 60, 230);
+  opacity: 1;
+  transition: opacity 0.15s;
+}
+.to-main-button:hover{
+  transition: 0.15s;
+  background-color: rgb(16, 16, 157);
+}
+.to-main-button:active{
+  opacity: 0.5;
+}
+
+.to-welcome-button{
+  margin-right: 200px;
+  font-size: 20px;
+  border: none;
+  padding: 12px 8px;
+  border-radius: 4px;
+  color: white;
+  background-color: rgb(60, 60, 230);
+  opacity: 1;
+  transition: opacity 0.15s;
+}
+.to-welcome-button:hover{
+  transition: 0.15s;
+  background-color: rgb(16, 16, 157);
+}
+.to-welcome-button:active{
+  opacity: 0.5;
+}
+
+#to-main-button-and-clock{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+

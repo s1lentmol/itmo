@@ -1,0 +1,34 @@
+table {
+    width: 80%;
+    border-collapse: collapse;
+    margin: 20px auto;
+}
+th, td {
+    border: 1px solid #333;
+    padding: 8px 12px;
+    text-align: center;
+}
+th {
+    background-color: #f2f2f2;
+}
+.center {
+    text-align: center;
+}
+.back-button {
+    border: none;
+    padding: 12px 8px;
+    border-radius: 4px;
+    color: white;
+    text-decoration: none;
+    background-color: rgb(60, 60, 230);
+    opacity: 1;
+    transition: opacity 0.15s;
+}
+
+.back-button:hover {
+    transition: 0.15s;
+    background-color: rgb(16, 16, 157);
+}
+.back-button:active{
+    opacity: 0.5;
+}
