@@ -1,11 +1,10 @@
 from PyQt5.QtWidgets import (QVBoxLayout, QHBoxLayout, QTableWidget, QTableWidgetItem,
-                             QPushButton, QLineEdit, QLabel, QFileDialog, QMessageBox, QComboBox)
+                             QPushButton, QLineEdit, QLabel, QFileDialog, QMessageBox, QComboBox, QHeaderView)
 import numpy as np
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from data_manager import load_from_file, generate_data
 from interpolation_methods import lagrange, newton_divided, newton_finite, compute_finite_diff_table
-
 
 def setup_ui(window):
     window.setWindowTitle('Интерполяция')
@@ -14,14 +13,19 @@ def setup_ui(window):
     # Таблица входных данных
     table = QTableWidget(0, 2)
     table.setHorizontalHeaderLabels(['x', 'y'])
-    table.setEditTriggers(QTableWidget.AllEditTriggers)  # Разрешить ввод
+    table.setEditTriggers(QTableWidget.AllEditTriggers)
+    table.setMinimumHeight(200)
+    table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
     layout.addWidget(table)
 
+    # Кнопки управления строками и загрузкой
     btn_add_row = QPushButton('Добавить строку')
+    btn_del_row = QPushButton('Удалить строку')
     btn_update = QPushButton('Обновить данные')
     btn_load = QPushButton('Загрузить из файла')
     row_ctrl = QHBoxLayout()
     row_ctrl.addWidget(btn_add_row)
+    row_ctrl.addWidget(btn_del_row)
     row_ctrl.addWidget(btn_update)
     row_ctrl.addWidget(btn_load)
     layout.addLayout(row_ctrl)
@@ -34,13 +38,13 @@ def setup_ui(window):
     edit_num = QLineEdit('5')
     btn_generate = QPushButton('Сгенерировать')
     gen_layout = QHBoxLayout()
-    gen_layout.addWidget(QLabel('Функция:'));
+    gen_layout.addWidget(QLabel('Функция:'))
     gen_layout.addWidget(func_combo)
-    gen_layout.addWidget(QLabel('Интервал от:'));
+    gen_layout.addWidget(QLabel('Интервал от:'))
     gen_layout.addWidget(edit_start)
-    gen_layout.addWidget(QLabel('до:'));
+    gen_layout.addWidget(QLabel('до:'))
     gen_layout.addWidget(edit_end)
-    gen_layout.addWidget(QLabel('Точек:'));
+    gen_layout.addWidget(QLabel('Точек:'))
     gen_layout.addWidget(edit_num)
     gen_layout.addWidget(btn_generate)
     layout.addLayout(gen_layout)
@@ -54,8 +58,8 @@ def setup_ui(window):
     edit_x0 = QLineEdit()
     btn_eval = QPushButton('Вычислить')
     eval_layout = QHBoxLayout()
-    eval_layout.addWidget(QLabel('x0:'));
-    eval_layout.addWidget(edit_x0);
+    eval_layout.addWidget(QLabel('x0:'))
+    eval_layout.addWidget(edit_x0)
     eval_layout.addWidget(btn_eval)
     layout.addLayout(eval_layout)
 
@@ -76,6 +80,20 @@ def setup_ui(window):
             table.setItem(i, 0, QTableWidgetItem(f"{xi:.4f}"))
             table.setItem(i, 1, QTableWidgetItem(f"{yi:.4f}"))
 
+    def update_diff():
+        if not data['y']:
+            return
+        if len(set(data['x'])) != len(data['x']):
+            QMessageBox.warning(window, 'Ошибка', 'Все координаты x должны быть разными')
+            return
+        diff = compute_finite_diff_table(data['y'])
+        diff_table.clear()
+        diff_table.setRowCount(len(diff))
+        diff_table.setColumnCount(len(diff[0]))
+        for i, row in enumerate(diff):
+            for j, val in enumerate(row):
+                diff_table.setItem(i, j, QTableWidgetItem(f"{val:.4f}"))
+
     def load_table_data():
         xs, ys = [], []
         for i in range(table.rowCount()):
@@ -85,23 +103,21 @@ def setup_ui(window):
             except Exception:
                 QMessageBox.warning(window, 'Ошибка', f'Некорректные данные в строке {i + 1}')
                 return
-            xs.append(xi);
+            xs.append(xi)
             ys.append(yi)
         data['x'], data['y'] = xs, ys
+        update_data_table()
         update_diff()
-
-    def update_diff():
-        if not data['y']: return
-        diff = compute_finite_diff_table(data['y'])
-        diff_table.clear()
-        diff_table.setRowCount(len(diff))
-        diff_table.setColumnCount(len(diff[0]))
-        for i, row in enumerate(diff):
-            for j, val in enumerate(row):
-                diff_table.setItem(i, j, QTableWidgetItem(f"{val:.4f}"))
 
     def on_add_row():
         table.insertRow(table.rowCount())
+
+    def on_del_row():
+        row = table.currentRow()
+        if row < 0:
+            QMessageBox.warning(window, 'Ошибка', 'Выберите строку для удаления')
+            return
+        table.removeRow(row)
 
     def on_load():
         path, _ = QFileDialog.getOpenFileName(window, 'Открыть файл', '', 'Text Files (*.txt)')
@@ -136,6 +152,9 @@ def setup_ui(window):
         if len(xs) < 2:
             QMessageBox.warning(window, 'Ошибка', 'Недостаточно данных')
             return
+        if len(xs) != len(set(xs)):
+            QMessageBox.warning(window, 'Ошибка', 'Все координаты x должны быть разными')
+            return
         try:
             r1 = lagrange(xs, ys, x0)
             r2 = newton_divided(xs, ys, x0)
@@ -143,6 +162,8 @@ def setup_ui(window):
             result_label.setText(
                 f'Результаты: Лагранж={r1:.4f}, Ньютон_раздел={r2:.4f}, Ньютон_конечн={r3:.4f}'
             )
+            data['last_x0'] = x0
+            data['last_y0'] = r1
             draw_plot()
         except Exception as e:
             QMessageBox.warning(window, 'Ошибка', str(e))
@@ -156,10 +177,13 @@ def setup_ui(window):
         yy = [lagrange(data['x'], data['y'], xi) for xi in xx]
         ax.plot(xx, yy, label='Интерполяционный полином')
         ax.scatter(xs_arr, ys_arr, label='Узлы')
+        if 'last_x0' in data and 'last_y0' in data:
+            ax.scatter(data['last_x0'], data['last_y0'], color='red', label='x0', zorder=5)
         ax.legend()
         canvas.draw()
 
     btn_add_row.clicked.connect(on_add_row)
+    btn_del_row.clicked.connect(on_del_row)
     btn_update.clicked.connect(load_table_data)
     btn_load.clicked.connect(on_load)
     btn_generate.clicked.connect(on_generate)
